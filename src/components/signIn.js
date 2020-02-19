@@ -1,4 +1,7 @@
 import React from 'react';
+import {useDispatch} from 'react-redux';
+import $ from 'jquery';
+import * as Actions from '../store/actions';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -48,6 +51,77 @@ const useStyles = makeStyles(theme => ({
 
 export default function SignIn() {
   const classes = useStyles();
+  const dispatch = useDispatch();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+   
+    const email = document.getElementById('email').value;
+    const password1 = document.getElementById('password').value;
+    console.log(email);
+    console.log(password1);
+    if(email.length && password1.length){
+        fetch('https://smct-server.herokuapp.com/users/login', {
+          method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: password1,
+          email: email
+        })
+      })
+        .then(response => {
+          console.log(response.status);
+            if(response.status != 200){
+          response.json()
+          .then(response => {
+              ocShowAlert(response.error, 'red');
+            })
+          .catch(err => {
+            console.log(err);
+             ocShowAlert(err, 'red');
+          })
+          }
+            else{
+              response.json()
+              .then(response => {
+                console.log(response);
+                console.log(response.obj.data);
+                dispatch(Actions.signIn(response.obj.data));
+                 window.location.href='./home';
+              })
+              .catch(err=> {
+                console.og(err);
+                ocShowAlert(err, 'red');
+              })
+            }
+          })
+          .catch(err => {
+            console.log(err);
+            ocShowAlert(err, 'red');
+          })
+    }
+    else{
+      ocShowAlert('please provide all details', 'orange');
+    }
+  }
+
+  const ocShowAlert = ( message, background = '#3089cf' ) => {
+    let alertContainer = document.querySelector( '#oc-alert-container' ),
+      alertEl = document.createElement( 'div' ),
+      textNode = document.createTextNode( message );
+    alertEl.setAttribute( 'class', 'oc-alert-pop-up' );
+    $( alertEl ).css( 'background', background );
+    alertEl.appendChild( textNode );
+    alertContainer.appendChild( alertEl );
+    setTimeout( function () {
+      $( alertEl ).fadeOut( 'slow' );
+      $( alertEl ).remove();
+    }, 3000 );
+  };
+
 
   return (
     <Container component="main" maxWidth="xs">
@@ -59,6 +133,7 @@ export default function SignIn() {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
+        <div id="oc-alert-container" style={{margin: '15px'}}></div>
         <form className={classes.form} noValidate>
           <TextField
             variant="outlined"
@@ -82,27 +157,19 @@ export default function SignIn() {
             id="password"
             autoComplete="current-password"
           />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-          />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
             className={classes.submit}
+            onClick={handleSubmit}
           >
             Sign In
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link href="./signup" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>

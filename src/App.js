@@ -8,18 +8,12 @@ import './App.css';
 import Particles from 'react-particles-js';
 import SignIn from './components/signIn';
 import SignUp from './components/signUp';
+import View from './components/view';
 import * as Actions from './store/actions'
 import Homepage from './components/homepage';
-import SignInOption from './components/signInOption';
-import View from './components/view';
 import {connect} from 'react-redux';
 import store from './store';
-import firebase from "firebase"
-import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth"
-import fire from './components/fire'
 
-console.log(firebase.auth().currentUser);
-console.log(firebase.auth.GoogleAuthProvider);
 
 
 const particlesOptions={
@@ -57,46 +51,8 @@ const theme = createMuiTheme({
 
 class App extends React.Component {
 
-  
-  uiConfig = {
-    signInFlow: "popup",
-    signInOptions: [
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-      //firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-      firebase.auth.GithubAuthProvider.PROVIDER_ID,
-      firebase.auth.EmailAuthProvider.PROVIDER_ID
-    ],
-    callbacks: {
-      signInSuccess: () => false
-    }
-  }
-
-  componentDidMount = () => {
-          
-      
-    firebase.auth().onAuthStateChanged(user => {
-      const { dispatch } = this.props;                
-      if(!!user){
-        dispatch(Actions.signIn(user));
-        
-    }
-      else{
-        dispatch(Actions.signOut());
-      }
-      console.log("user", user.displayName);
-      console.log(this.props.isSignedIn);
-    
-  })
-  }
-
-
-
-
   render(){
 
-    const gradient = this.props.gradient;
-    console.log(gradient);
   return (
     
     <ThemeProvider theme={theme}>
@@ -104,7 +60,7 @@ class App extends React.Component {
                 className='Particles'
                 params={particlesOptions}
                 style={{
-                  background: `${gradient}`,
+                  background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(8,9,110,0.7234244039412641) 0%, rgba(0,212,255,1) 100%)',
                   width: '100%',
                   height: '100%', 
                   position: 'fixed',
@@ -117,16 +73,11 @@ class App extends React.Component {
     <div className="App" style={{height: '100%'}}>
                 <Switch>
               <Route exact path='/signup' component={SignUp} />
-              <Route exact path='/signin' component={SignIn} />
               <Route exact path='/home' component={Homepage} />
               <Route exact path='/view/:id' render={(props) => <View store={store} {...props} /> } />
-              <Route path='/' component={SignInOption} />
+              <Route path='/' component={SignIn} />
               </Switch>
-              
-          
-
-                
-
+   
     </div>
     </Router>
     </ThemeProvider>
@@ -134,12 +85,5 @@ class App extends React.Component {
 }
 }
 
-const mapStateToProps = (state) => {
-  console.log(state);
-  return {
-    isSignedIn : state.auth.isSignedIn,
-    gradient: state.matches.gradient
-  }
-}
 
-export default connect(mapStateToProps)(App);
+export default App;

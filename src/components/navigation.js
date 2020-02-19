@@ -6,18 +6,12 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import InputBase from '@material-ui/core/InputBase';
 import Badge from '@material-ui/core/Badge';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import MenuIcon from '@material-ui/icons/Menu';
-import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import MailIcon from '@material-ui/icons/Mail';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
-import firebase from 'firebase';
-import {Link} from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   grow: {
@@ -85,8 +79,8 @@ const useStyles = makeStyles(theme => ({
   },
   profileImage: {
     borderRadius: '50%',
-    width: theme.spacing(4),
-    height: theme.spacing(4),
+    width: theme.spacing(6),
+    height: theme.spacing(6),
   },
   profileImage1: {
       borderRadius: '50%',
@@ -114,13 +108,7 @@ export default function PrimarySearchAppBar() {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  console.log(firebase.auth());
-  const [user, setUser] = useState(null);
-  firebase.auth().onAuthStateChanged(user => {
-      setUser(user);
-      console.log(user);
-      });
-  console.log(user);
+  
   
 
   const handleProfileMenuOpen = event => {
@@ -137,8 +125,8 @@ export default function PrimarySearchAppBar() {
   };
 
    const logOut = () => {
-    firebase.auth().signOut();
     dispatch(Actions.signOut());
+    window.localStorage.clear();
     window.location.href = '/';
   };
 
@@ -146,9 +134,6 @@ export default function PrimarySearchAppBar() {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
-  if(user == null){
-    return null;
-  }
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -162,10 +147,10 @@ export default function PrimarySearchAppBar() {
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>
-        <center><img src={user.photoURL} className={classes.profileImage1} /></center>
+        <center><AccountCircle className={classes.profileImage1} /></center>
       </MenuItem>
-      <MenuItem onClick={handleMenuClose}>{user.email}</MenuItem>
-      <MenuItem onClick={handleMenuClose}>{user.displayName}</MenuItem>
+      <MenuItem onClick={handleMenuClose}>{JSON.parse(window.localStorage.getItem('user')).email}</MenuItem>
+      <MenuItem onClick={handleMenuClose}>{JSON.parse(window.localStorage.getItem('user')).displayName}</MenuItem>
       <MenuItem onClick={logOut}>Log Out</MenuItem>
     </Menu>
   );
@@ -182,10 +167,10 @@ export default function PrimarySearchAppBar() {
       onClose={handleMobileMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>
-        <center><img src={user.photoURL} className={classes.profileImage1} /></center>
+        <center><AccountCircle className={classes.profileImage1} /></center>
       </MenuItem>
-      <MenuItem onClick={handleMenuClose}>{user.email}</MenuItem>
-      <MenuItem onClick={handleMenuClose}>{user.displayName}</MenuItem>
+      <MenuItem onClick={handleMenuClose}>{JSON.parse(window.localStorage.getItem('user')).email}</MenuItem>
+      <MenuItem onClick={handleMenuClose}>{JSON.parse(window.localStorage.getItem('user')).displayName}</MenuItem>
       <MenuItem onClick={logOut}>Log Out</MenuItem>
     </Menu>
   );
@@ -194,43 +179,10 @@ export default function PrimarySearchAppBar() {
     <div className={classes.grow}>
       <AppBar position="static" className={classes.appbar}>
         <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="open drawer"
-          >
-            <img src='http://www.pngall.com/wp-content/uploads/2017/04/IPL-Logo-Transparent-PNG.png' className={classes.image}/>
-          </IconButton>
-          <Typography component={Link} to="/home" className={classes.title} variant="h6" noWrap>
-            Home
+          <Typography className={classes.title} variant="h4" noWrap>
+            Social Media Campaigner Tool
           </Typography>
           
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
-              <SearchIcon />
-            </div>
-            <InputBase
-              placeholder="Search…"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              onChange={(event) => {
-                console.log(event.target.value);
-                var value;
-                if(event.target.value == ""){
-                  value = null;
-                }
-                else{
-                  value = event.target.value;
-                }
-                dispatch(Actions.setSearchedText(value));
-                dispatch(Actions.setIsNewSelectedTrue());
-              }}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </div>
           <div className={classes.grow} />
           
           <div className={classes.sectionDesktop}>
@@ -242,7 +194,7 @@ export default function PrimarySearchAppBar() {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
-              <img src={firebase.auth().currentUser.photoURL} className={classes.profileImage} />
+              <AccountCircle  className={classes.profileImage} />
             </IconButton>
             </div>
           <div className={classes.sectionMobile}>

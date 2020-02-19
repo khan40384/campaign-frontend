@@ -1,4 +1,5 @@
 import React from 'react';
+import {useDispatch} from 'react-redux';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -12,6 +13,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import $ from 'jquery';
+import axios from 'axios';
+import * as Actions from '../store/actions';
 
 function Copyright() {
   return (
@@ -46,8 +50,92 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const delay = (ms) => new Promise(resolve =>
+    setTimeout(resolve, ms)
+  );
+
 export default function SignUp() {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const displayName = document.getElementById('displayName').value;
+    const password1 = document.getElementById('password').value;
+    const password2 = document.getElementById('passwordConfirm').value;
+    console.log(email);
+    console.log(password1);
+    if(email.length && password1.length && password2.length && displayName.length){
+      if(password1 != password2){
+        ocShowAlert('passwords do not matches', 'red');
+      }
+      else if(password1.length <6){
+        ocShowAlert('password must be of minimum length 6', 'yellow');
+      }
+      else{
+        fetch('https://smct-server.herokuapp.com/users/register', {
+          method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          displayName: displayName,
+          password: password1,
+          email: email
+        })
+      })
+        .then(response => {
+          console.log(response.status);
+            if(response.status != 200){
+          response.json()
+          .then(response => {
+              ocShowAlert(response.error, 'red');
+            })
+          .catch(err => {
+            console.log(err);
+             ocShowAlert(err, 'red');
+          })
+          }
+            else{
+              response.json()
+              .then(response => {
+                console.log(response);
+                console.log(response.obj.data);
+                dispatch(Actions.signIn(response.obj.data));
+                 window.location.href='./home';
+              })
+              .catch(err=> {
+                console.og(err);
+                ocShowAlert(err, 'red');
+              })
+            }
+          })
+          .catch(err => {
+            console.log(err);
+            ocShowAlert(err, 'red');
+          })
+        }
+      }
+    
+    else{
+      ocShowAlert('please provide all details', 'orange');
+    }
+  }
+
+  const ocShowAlert = ( message, background = '#3089cf' ) => {
+    let alertContainer = document.querySelector( '#oc-alert-container' ),
+      alertEl = document.createElement( 'div' ),
+      textNode = document.createTextNode( message );
+    alertEl.setAttribute( 'class', 'oc-alert-pop-up' );
+    $( alertEl ).css( 'background', background );
+    alertEl.appendChild( textNode );
+    alertContainer.appendChild( alertEl );
+    setTimeout( function () {
+      $( alertEl ).fadeOut( 'slow' );
+      $( alertEl ).remove();
+    }, 3000 );
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -59,16 +147,17 @@ export default function SignUp() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
+        <div id="oc-alert-container" style={{margin: '15px'}}></div>
         <form className={classes.form} noValidate>
           <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
+            id="displayName"
+            label="DisplayName"
+            name="displayName"
+            autoComplete="displayName"
             autoFocus
           />
           <TextField
@@ -79,7 +168,7 @@ export default function SignUp() {
             id="email"
             label="Email Address"
             name="email"
-            validationErrors={{
+            validationerrors={{
                 isEmail: 'Please enter a valid email'
             }}
             autoComplete="email"
@@ -95,7 +184,7 @@ export default function SignUp() {
             type="password"
             id="password"
             validations="equalsField:passwordConfirm"
-            validationErrors={{
+            validationerrors={{
                 equalsField: 'Passwords do not match'
             }}
             autoComplete="current-password"
@@ -109,15 +198,11 @@ export default function SignUp() {
             name="passwordConfirm"
             label="Confirm Password"
             validations="equalsField:password"
-            validationErrors={{
+            validationerrors={{
                 equalsField: 'Passwords do not match'
             }}
             id="passwordConfirm"
             autoComplete="current-password"
-          />
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
           />
           <Button
             type="submit"
@@ -125,26 +210,19 @@ export default function SignUp() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            onClick={handleSubmit}
           >
-            Sign In
+            Submit
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
             <Grid item>
-              <Link href="#" variant="body2">
-                {"Don't have an account? Sign Up"}
+              <Link href="./login" variant="body2">
+                {"Already have an account? Sign In"}
               </Link>
             </Grid>
           </Grid>
         </form>
       </div>
-      <Box mt={8}>
-        <Copyright />
-      </Box>
     </Container>
   );
 }
